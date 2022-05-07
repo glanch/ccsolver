@@ -31,28 +31,31 @@ class Game:
 
         return neighbors
 
-    def parse(self, representation: str):
-        self.color_tiles = {}
-        self.number_tiles = {}
-        current_color = 0
-        i = len([x for x in representation.split("\n") if x != ""])
-        for line in representation.split("\n"):
-            # Ignore blank lines
-            if line == "":
-               continue
-
-            j = 0
-            for character in line:
-                if character == " ":
-                    # Ignore blank character
-                    pass
-                elif character == "X": 
-                    self.color_tiles[(i,j)] = "C" + str(current_color)
-                    current_color += 1
-                elif character.isnumeric():
-                    self.number_tiles[(i,j)] = int(character)
-
-                j += 1
-
-            i -= 1
                 
+def parse(representation: str):
+    game = Game()
+    game.color_tiles = {}
+    game.number_tiles = {}
+    current_color = 0
+    j = len([x for x in representation.split("\n") if x != ""])
+    for line in representation.split("\n"):
+        # Ignore blank lines
+        if line == "":
+            continue
+
+        i = 0
+        for character in line:
+            if character == " ":
+                # Ignore blank character
+                pass
+            elif character == "X": 
+                game.color_tiles[(i,j)] = "C" + str(current_color)
+                current_color += 1
+            elif character.isnumeric():
+                game.number_tiles[(i,j)] = int(character)
+
+            i += 1
+
+        j -= 1
+
+    return game
