@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Solve example levels",
+            "type": "python",
+            "request": "launch",
+            "module": "ccsolver.solve",
+            "justMyCode": true
+        }
+    ]
+}
