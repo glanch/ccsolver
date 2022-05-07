@@ -44,7 +44,7 @@ def build_graph(game):
     return graph
 
 
-def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True):
+def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True, suppress_gurobi_output=True):
     graph = build_graph(game)
 
     # Add subloop so MTZ TSP formulation can be applied here
@@ -63,9 +63,14 @@ def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True):
     if visualize:
         plt.subplot(211)
         nx.draw(graph, pos=graph_positions, labels=node_labels, node_size=node_size)
-    # Create model
-    model = Model("trivial_mip")
 
+    # Create model
+    model = Model("cc_tsp_mtz")
+    
+    # Suppress output if wished 
+    if suppress_gurobi_output:
+        model.Params.LogToConsole = 0
+    
     x = {}
 
     # Introduce variable for every edge
@@ -112,8 +117,7 @@ def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True):
     model.optimize()
 
     if model.Status != GRB.OPTIMAL:
-        print("No optimal value found")
-        return
+        return False, model
 
     # Based on variable assingment build edge list
     selected_edges = [(i, j) for (i, j) in x.keys() if x[(i, j)].x > 0.0001]
@@ -129,10 +133,7 @@ def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True):
     # solution_subgraph should be fully connected
     assert nx.is_strongly_connected(solution_subgraph)
 
-    # Show solution and initial game graph
-    print("Selected edges")
-    print(selected_edges)
-
+    # Visualize solution if wished
     if visualize:
         plt.subplot(212)
         nx.draw_networkx_nodes(
@@ -152,6 +153,7 @@ def solve_with_mtz_sec(game, visualize=True, add_order_constraints=True):
 
         plt.show()
 
+    return True, graph, selected_edges, model
 
 levels = [
     """
@@ -180,7 +182,26 @@ levels = [
   """,
 ]
 
+runtimes = []
 for level in levels:
-    # Build game
-    game = parse(level)
-    solve_with_mtz_sec(game)
+    # Test 20 times
+    level_runtimes = []
+
+    for i in range(0, 20):
+        # Build game
+        game = parse(level)
+        return_value = solve_with_mtz_sec(game, visualize=False)
+        success = return_value[0]
+        if success == True:
+            graph, selected_edges, model = return_value[1:]
+            level_runtimes.append(model.Runtime)
+        else:
+            model = return_value[1]
+            print("Level unsolvable")
+            level_runtimes.append(model.Runtime)
+            break
+    
+    print(f"AVG: {sum(level_runtimes)/len(level_runtimes)}")
+    print(f"SUM: {sum(level_runtimes)}")
+    print("------")
+    runtimes.append(level_runtimes)
