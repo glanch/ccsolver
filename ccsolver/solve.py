@@ -97,7 +97,10 @@ def solve_with_mtz_sec(game):
 
     selected_edges = [(i, j) for (i, j) in x.keys() if x[(i, j)].x > 0.0001]
 
+    # Show solution and initial game graph
+    print("Selected edges")
     print(selected_edges)
+
     plt.subplot(212)
     nx.draw_networkx_edges(
         graph,
@@ -105,9 +108,6 @@ def solve_with_mtz_sec(game):
         
         edgelist=selected_edges
     ) 
-
-    # draw_networkx_edges
-
 
     plt.show()
     while True:
